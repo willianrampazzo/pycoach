@@ -1,10 +1,10 @@
 # PyCoach: a training package for PyTorch
 
 PyCoach is a Python package that provides:
-- A high-level abstration for PyTorch model training;
+- A high-level abstraction for PyTorch model training;
 - Well known callbacks structure based on Keras;
 
-The main objective of PyCoach is handle training, evaluation and prediction, leaving other tasks like create the network model and dataloaders to the users.
+The main purpose of PyCoach is handle training, evaluation and prediction, leaving other tasks like create the network model and dataloaders to the users.
 
 This is an initial personal project and contribution to it is appreciated.
 
