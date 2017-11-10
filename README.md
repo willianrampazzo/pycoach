@@ -10,6 +10,8 @@ This is an initial personal project and contribution to it is appreciated.
 
 ## To Do:
 
+- Document the use of the package;
+- Add use examples;
 - Document the code;
 - Complete Keras callbacks ports to PyCoach:
     - [x] CallbackList
