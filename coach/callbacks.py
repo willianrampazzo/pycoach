@@ -1089,17 +1089,18 @@ class Plotter(Callback):
     def on_epoch_end(self, epoch, logs=None):
         logs = logs or {}
         self.loss_history['loss'].append(logs['loss'])
-        self.loss_history['val_loss'].append(logs['val_loss'])
+        if len(logs) >= 2:
+            self.loss_history['val_loss'].append(logs['val_loss'])
         if epoch % self.step == 0:
-            self.plot_metrics(epoch, self.loss_history['loss'],
-                    self.loss_history['val_loss'])
+            self.plot_metrics(epoch, self.loss_history)
         self.epoch += 1
 
-    def plot_metrics(self, epoch, loss, val_loss):
+    def plot_metrics(self, epoch, loss_history):
         x = np.arange(0, self.epoch+1)
         self.ax.clear()
-        self.ax.plot(x, loss, label='training loss')
-        self.ax.plot(x, val_loss, label='validation loss')
+        self.ax.plot(x, loss_history['loss'], label='training loss')
+        if len(loss_history['val_loss']) != 0:
+            self.ax.plot(x, loss_history['val_loss'], label='validation loss')
         self.ax.grid(True)
         self.ax.legend(loc=1)
         self.ax.set_title('Current epoch: {}'.format(self.epoch))
