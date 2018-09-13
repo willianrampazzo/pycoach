@@ -6,7 +6,6 @@ from pandas.io.parsers import read_csv
 from torch.utils.data import Dataset
 
 import time
-import sys
 
 def plot_image(x, y, y_pred=None):
     '''
@@ -110,7 +109,7 @@ class FacialKeypointsDataset(Dataset):
         # carrega keypoints como matriz
         keypoints = self.facial_keypoints.iloc[idx, :-1].as_matrix().astype(
             'float')
-        # dicionário com a imagen e os keypoints
+        # dicionário com a imagem e os keypoints
         sample = {'image': image, 'keypoints': keypoints}
 
         # aplica transformação
