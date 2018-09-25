@@ -1,26 +1,27 @@
+""" Coach Module """
 from __future__ import absolute_import
 
-import numpy as np
-import torch
+#import numpy as np
 import warnings
+import torch
 
-from copy import deepcopy
-from time import time
+#from copy import deepcopy
+#from time import time
 from torch.autograd import Variable
 
 from . import callbacks as cbks
 
 class Coach:
     """
-
+        PyCoach class
     """
 
     def __init__(self,
-            model,
-            loaders,
-            optimizer=None,
-            loss_fn=None
-            ):
+                 model,
+                 loaders,
+                 optimizer=None,
+                 loss_fn=None
+                ):
         """
 
         """
@@ -29,11 +30,14 @@ class Coach:
         self.loaders = loaders
         self.optimizer = optimizer
         self.loss_fn = loss_fn
+
+        self.history = None
+        self.stop_training = False
     # __init__()
 
     def evaluate(self, loader, loss_fn=None):
         """
-
+            Evaluation Method
         """
         if not loss_fn:
             loss_fn = self.loss_fn
@@ -66,12 +70,12 @@ class Coach:
         self.model.train()
 
         total_loss = total_loss / batches
-        return (total_loss)
+        return total_loss
     # evaluation()
 
     def load(self, fname, weights_only=False):
         """
-
+            Load Method
         """
         if weights_only:
             self.model.load_state_dict(torch.load(fname))
@@ -81,7 +85,7 @@ class Coach:
 
     def predict(self, loader):
         """
-
+            Predict Method
         """
         #outputs = loader.dataset.data_tensor.new()
         outputs = torch.Tensor()
@@ -101,12 +105,12 @@ class Coach:
             # forward pass
             outputs = torch.cat((outputs, self.model(inputs).data))
         self.model.train()
-        return (outputs)
+        return outputs
     # predict()
 
     def save(self, fname, weights_only=False):
         """
-
+            Save Method
         """
         if weights_only:
             torch.save(self.model.state_dict(), fname)
@@ -117,15 +121,14 @@ class Coach:
     # save()
 
     def train(self,
-            epochs,
-            optimizer=None,
-            loss_fn=None,
-            patience=None,
-            callbacks=None,
-            verbose=1,
-            ):
+              epochs,
+              optimizer=None,
+              loss_fn=None,
+              callbacks=None,
+              verbose=1,
+             ):
         """
-
+            Train Method
         """
 
         if not optimizer and self.optimizer is not None:
@@ -145,16 +148,15 @@ class Coach:
             do_validation = True
             callback_metrics = ['loss', 'val_loss']
             num_val_samples = len(self.loaders['validate'].dataset)
-            val_batch_size = self.loaders['validate'].batch_size
 
             if verbose > 0:
                 print('Train on %d samples, validate on %d samples' %
-                    (num_train_samples, num_val_samples))
+                      (num_train_samples, num_val_samples))
         else:
             callback_metrics = ['loss']
             if verbose > 0:
                 print('Train on %d samples' %
-                    (num_train_samples))
+                      (num_train_samples))
 
         self.history = cbks.History()
         callbacks = [cbks.BaseLogger()] + (callbacks or []) + [self.history]
@@ -221,8 +223,8 @@ class Coach:
                 # loss on validation set
                 if do_validation:
                     epoch_logs['val_loss'] = (self.evaluate(
-                                            self.loaders['validate'],
-                                            loss_fn))
+                        self.loaders['validate'],
+                        loss_fn))
                 callbacks.on_epoch_end(epoch, epoch_logs)
                 if self.stop_training:
                     break
