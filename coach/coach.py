@@ -1,13 +1,8 @@
 """ Coach Module """
-from __future__ import absolute_import
+#from __future__ import absolute_import
 
-#import numpy as np
 import warnings
 import torch
-
-#from copy import deepcopy
-#from time import time
-from torch.autograd import Variable
 
 from . import callbacks as cbks
 
@@ -16,20 +11,20 @@ class Coach:
         PyCoach class
     """
 
-    def __init__(self,
-                 model,
-                 loaders,
-                 optimizer=None,
-                 loss_fn=None
+    def __init__(self, model, loaders, optimizer=None, loss_fn=None,
+                 cuda="Auto"
                 ):
         """
 
         """
-        self.use_gpu = torch.cuda.is_available()
         self.model = model
         self.loaders = loaders
         self.optimizer = optimizer
         self.loss_fn = loss_fn
+
+        if cuda == "Auto":
+            use_cuda = torch.cuda.is_available()
+        self.device = torch.device("cuda" if use_cuda else "cpu")
 
         self.history = None
         self.stop_training = False
@@ -53,11 +48,7 @@ class Coach:
             else:
                 inputs, labels = data
 
-            if self.use_gpu:
-                inputs, labels = Variable(inputs.cuda()), \
-                        Variable(labels.cuda())
-            else:
-                inputs, labels = Variable(inputs), Variable(labels)
+            inputs, labels = inputs.to(self.device), labels.to(self.device)
 
             # forward pass
             outputs = self.model(inputs)
@@ -66,7 +57,7 @@ class Coach:
             loss = loss_fn(outputs, labels)
 
             # metrics
-            total_loss += loss.data[0]
+            total_loss += loss.item()
         self.model.train()
 
         total_loss = total_loss / batches
@@ -89,19 +80,18 @@ class Coach:
         """
         #outputs = loader.dataset.data_tensor.new()
         outputs = torch.Tensor()
-        if self.use_gpu:
-            outputs = outputs.cuda()
+
+        outputs = outputs.to(self.device)
+
         self.model.eval()
         for data in loader:
             if isinstance(data, dict):
                 inputs, labels = data.values()
             else:
                 inputs, labels = data
-            if self.use_gpu:
-                inputs, labels = Variable(inputs.cuda()), \
-                        Variable(labels.cuda())
-            else:
-                inputs, labels = Variable(inputs), Variable(labels)
+
+            inputs, labels = inputs.to(self.device), labels.to(self.device)
+
             # forward pass
             outputs = torch.cat((outputs, self.model(inputs).data))
         self.model.train()
@@ -120,11 +110,7 @@ class Coach:
                 torch.save(self.model, fname)
     # save()
 
-    def train(self,
-              epochs,
-              optimizer=None,
-              loss_fn=None,
-              callbacks=None,
+    def train(self, epochs, optimizer=None, loss_fn=None, callbacks=None,
               verbose=1,
              ):
         """
@@ -137,8 +123,11 @@ class Coach:
             raise ValueError('You should set an optimizer before ',
                              'train a network!')
 
-        if not loss_fn:
+        if not loss_fn and self.loss_fn is not None:
             loss_fn = self.loss_fn
+        else:
+            raise ValueError('You should set a loss function before ',
+                             'train a network!')
 
         num_train_samples = len(self.loaders['train'].dataset)
         batch_size = self.loaders['train'].batch_size
@@ -155,8 +144,7 @@ class Coach:
         else:
             callback_metrics = ['loss']
             if verbose > 0:
-                print('Train on %d samples' %
-                      (num_train_samples))
+                print('Train on %d samples' % (num_train_samples))
 
         self.history = cbks.History()
         callbacks = [cbks.BaseLogger()] + (callbacks or []) + [self.history]
@@ -168,7 +156,6 @@ class Coach:
         callbacks.set_params({
             'batch_size': batch_size,
             'epochs': epochs,
-            #'steps': steps_per_epoch,
             'samples': num_train_samples,
             'verbose': verbose,
             'do_validation': do_validation,
@@ -193,20 +180,17 @@ class Coach:
                     else:
                         inputs, labels = data
 
-                    if self.use_gpu:
-                        inputs, labels = Variable(inputs.cuda()), \
-                                Variable(labels.cuda())
-                    else:
-                        inputs, labels = Variable(inputs), Variable(labels)
+                    inputs, labels = inputs.to(self.device), \
+                                     labels.to(self.device)
+
+                    # zeroes gradients
+                    optimizer.zero_grad()
 
                     # forward pass
                     predict = self.model(inputs)
 
                     # loss
                     loss = loss_fn(predict, labels)
-
-                    # zeroes gradients
-                    optimizer.zero_grad()
 
                     # calculate new gradients
                     loss.backward()
@@ -215,7 +199,7 @@ class Coach:
                     optimizer.step()
 
                     # metrics
-                    batch_logs['loss'] = loss.data[0]
+                    batch_logs['loss'] = loss.item()
                     callbacks.on_batch_end(batch, batch_logs)
                     if self.stop_training:
                         break
