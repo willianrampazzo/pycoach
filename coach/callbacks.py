@@ -1014,6 +1014,7 @@ class CSVLogger(Callback):
     def on_train_end(self, logs=None):
         self.csv_file.close()
         self.writer = None
+# CSVLogger()
 
 
 class LambdaCallback(Callback):
@@ -1066,7 +1067,6 @@ class LambdaCallback(Callback):
                              cleanup_callback])
         ```
     """
-
     def __init__(self,
                  on_epoch_begin=None,
                  on_epoch_end=None,
@@ -1101,11 +1101,14 @@ class LambdaCallback(Callback):
             self.on_train_end = on_train_end
         else:
             self.on_train_end = lambda logs: None
+# LambdaCallback()
+
 
 class Plotter(Callback):
-    def __init__(self, step=1):
+    def __init__(self, step=1, figsize=(9,5)):
         super(Plotter, self).__init__()
         self.step = step
+        self.figsize = figsize
         self.loss_history = {'loss':[], 'val_loss':[]}
         self.epoch = 0
 
@@ -1113,7 +1116,7 @@ class Plotter(Callback):
         logs = logs or {}
         self.epochs = self.params['epochs']
 
-        self.fig = plt.figure(figsize=(13, 7))
+        self.fig = plt.figure(figsize=self.figsize)
         self.ax = self.fig.add_subplot(111)
         self.ax.grid(True)
 
@@ -1136,3 +1139,31 @@ class Plotter(Callback):
         self.ax.legend(loc=1)
         self.ax.set_title('Current epoch: {}'.format(self.epoch))
         self.fig.canvas.draw()
+# Plotter()
+
+
+class TextLogger(Callback):
+    """Callback that prints metrics to stdout."""
+
+    def __init__(self):
+        super(TextLogger, self).__init__()
+        self.loss_history = {'loss':[], 'val_loss':[]}
+
+    def on_train_begin(self, logs=None):
+        self.verbose = self.params['verbose']
+        logs = logs or {}
+        self.epochs = self.params['epochs']
+
+    def on_epoch_begin(self, epoch, logs=None):
+        if self.verbose:
+            print('Epoch %d/%d' % (epoch + 1, self.epochs), end='')
+
+    def on_epoch_end(self, epoch, logs=None):
+        logs = logs or {}
+        self.loss_history['loss'].append(logs['loss'])
+        if len(logs) >= 2:
+            self.loss_history['val_loss'].append(logs['val_loss'])
+        if self.verbose:
+            print('\tloss: {:.5f} \tval_loss: {:.5f}'.format(
+                  logs['loss'], logs['val_loss']))
+# TextLogger()
