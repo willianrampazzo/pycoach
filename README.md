@@ -8,6 +8,8 @@ The main purpose of PyCoach is handle training, evaluation and prediction, leavi
 
 This is an initial personal project and contribution to it is appreciated.
 
+Actual status: Working with PyTorch 0.4!
+
 ## To Do:
 
 - Document the use of the package;
@@ -26,9 +28,10 @@ This is an initial personal project and contribution to it is appreciated.
     - [ ] LearningRateScheduler
     - [ ] TensorBoard
     - [ ] ReduceLROnPlateau
-    - [ ] CSVLogger
+    - [x] CSVLogger
     - [ ] LambdaCallback
     - [x] Plotter (new!)
+    - [x] TextLogger (new!)
 - Improve evaluation function;
 - Improve predict function;
 
