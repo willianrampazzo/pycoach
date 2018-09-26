@@ -948,10 +948,11 @@ class CSVLogger(Callback):
     including 1D iterables such as np.ndarray.
 
     # Example
-        ```python
-        csv_logger = CSVLogger('training.log')
-        model.fit(X_train, Y_train, callbacks=[csv_logger])
-        ```
+
+    ```python
+    csv_logger = CSVLogger('training.log')
+    model.fit(X_train, Y_train, callbacks=[csv_logger])
+    ```
 
     # Arguments
         filename: filename of the csv file, e.g. 'run/log.csv'.
@@ -967,7 +968,12 @@ class CSVLogger(Callback):
         self.writer = None
         self.keys = None
         self.append_header = True
-        self.file_flags = 'b' if six.PY2 and os.name == 'nt' else ''
+        if six.PY2:
+            self.file_flags = 'b'
+            self._open_args = {}
+        else:
+            self.file_flags = ''
+            self._open_args = {'newline': '\n'}
         super(CSVLogger, self).__init__()
 
     def on_train_begin(self, logs=None):
@@ -975,9 +981,12 @@ class CSVLogger(Callback):
             if os.path.exists(self.filename):
                 with open(self.filename, 'r' + self.file_flags) as f:
                     self.append_header = not bool(len(f.readline()))
-            self.csv_file = open(self.filename, 'a' + self.file_flags)
+            mode = 'a'
         else:
-            self.csv_file = open(self.filename, 'w' + self.file_flags)
+            mode = 'w'
+        self.csv_file = io.open(self.filename,
+                                mode + self.file_flags,
+                                **self._open_args)
 
     def on_epoch_end(self, epoch, logs=None):
         logs = logs or {}
@@ -991,18 +1000,22 @@ class CSVLogger(Callback):
             else:
                 return k
 
+        if self.keys is None:
+            self.keys = sorted(logs.keys())
+
         if self.model.stop_training:
             # We set NA so that csv parsers do not fail for this last epoch.
             logs = dict([(k, logs[k]) if k in logs else (k, 'NA') for k in self.keys])
 
         if not self.writer:
-            self.keys = sorted(logs.keys())
-
             class CustomDialect(csv.excel):
                 delimiter = self.sep
-
+            fieldnames = ['epoch'] + self.keys
+            if six.PY2:
+                fieldnames = [unicode(x) for x in fieldnames]
             self.writer = csv.DictWriter(self.csv_file,
-                                         fieldnames=['epoch'] + self.keys, dialect=CustomDialect)
+                                         fieldnames=fieldnames,
+                                         dialect=CustomDialect)
             if self.append_header:
                 self.writer.writeheader()
 
