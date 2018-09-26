@@ -148,8 +148,6 @@ class Coach:
 
         self.history = cbks.History()
         callbacks = [cbks.BaseLogger()] + (callbacks or []) + [self.history]
-        if verbose:
-            callbacks.insert(1, cbks.ProgbarLogger())
         callbacks = cbks.CallbackList(callbacks)
 
         callbacks.set_model(self)
