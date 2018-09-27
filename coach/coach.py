@@ -42,22 +42,23 @@ class Coach:
         batches = 0
 
         self.model.eval()
-        for batches, data in enumerate(loader):
-            if isinstance(data, dict):
-                inputs, labels = data.values()
-            else:
-                inputs, labels = data
+        with torch.no_grad():
+            for batches, data in enumerate(loader):
+                if isinstance(data, dict):
+                    inputs, labels = data.values()
+                else:
+                    inputs, labels = data
 
-            inputs, labels = inputs.to(self.device), labels.to(self.device)
+                inputs, labels = inputs.to(self.device), labels.to(self.device)
 
-            # forward pass
-            outputs = self.model(inputs)
+                # forward pass
+                outputs = self.model(inputs)
 
-            # loss
-            loss = loss_fn(outputs, labels)
+                # loss
+                loss = loss_fn(outputs, labels)
 
-            # metrics
-            total_loss += loss.item()
+                # metrics
+                total_loss += loss.item()
         self.model.train()
 
         total_loss = total_loss / batches
@@ -78,22 +79,21 @@ class Coach:
         """
             Predict Method
         """
-        #outputs = loader.dataset.data_tensor.new()
         outputs = torch.Tensor()
-
         outputs = outputs.to(self.device)
 
         self.model.eval()
-        for data in loader:
-            if isinstance(data, dict):
-                inputs, labels = data.values()
-            else:
-                inputs, labels = data
+        with torch.no_grad():
+            for data in loader:
+                if isinstance(data, dict):
+                    inputs, labels = data.values()
+                else:
+                    inputs, labels = data
 
-            inputs, labels = inputs.to(self.device), labels.to(self.device)
+                inputs, labels = inputs.to(self.device), labels.to(self.device)
 
-            # forward pass
-            outputs = torch.cat((outputs, self.model(inputs).data))
+                # forward pass
+                outputs = torch.cat((outputs, self.model(inputs).data))
         self.model.train()
         return outputs
     # predict()
