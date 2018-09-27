@@ -19,20 +19,19 @@ Actual status: Working with PyTorch 0.4!
     - [x] CallbackList
     - [x] Callback
     - [x] BaseLogger
-    - [ ] TerminateOnNaN
+    - [x] TerminateOnNaN
     - [x] ProgbarLogger
     - [x] History
     - [x] ModelCheckpoint
     - [x] EarlyStopping
-    - [ ] RemoteMonitor
+    - [x] RemoteMonitor
     - [ ] LearningRateScheduler
     - [ ] TensorBoard
     - [ ] ReduceLROnPlateau
     - [x] CSVLogger
-    - [ ] LambdaCallback
+    - [x] LambdaCallback
     - [x] Plotter (new!)
     - [x] TextLogger (new!)
-- Improve evaluation function;
 - Improve predict function;
 
 ## Links:

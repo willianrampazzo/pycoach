@@ -93,8 +93,8 @@ class CallbackList(object):
         self._delta_ts_batch_begin.append(time.time() - t_before_callbacks)
         delta_t_median = np.median(self._delta_ts_batch_begin)
         if (self._delta_t_batch > 0. and
-           delta_t_median > 0.95 * self._delta_t_batch and
-           delta_t_median > 0.1):
+                delta_t_median > 0.95 * self._delta_t_batch and
+                delta_t_median > 0.1):
             warnings.warn('Method on_batch_begin() is slow compared '
                           'to the batch update (%f). Check your callbacks.'
                           % delta_t_median)
@@ -144,6 +144,7 @@ class CallbackList(object):
 
     def __iter__(self):
         return iter(self.callbacks)
+# CallbackList()
 
 
 class Callback(object):
@@ -200,6 +201,7 @@ class Callback(object):
 
     def on_train_end(self, logs=None):
         pass
+# Callback()
 
 
 class BaseLogger(Callback):
@@ -247,6 +249,7 @@ class BaseLogger(Callback):
                         logs[k] = self.totals[k]
                     else:
                         logs[k] = self.totals[k] / self.seen
+# BaseLogger()
 
 
 class TerminateOnNaN(Callback):
@@ -260,6 +263,7 @@ class TerminateOnNaN(Callback):
             if np.isnan(loss) or np.isinf(loss):
                 print('Batch %d: Invalid loss, terminating training' % (batch))
                 self.model.stop_training = True
+# TerminateOnNaN()
 
 
 class ProgbarLogger(Callback):
@@ -337,6 +341,7 @@ class ProgbarLogger(Callback):
                 self.log_values.append((k, logs[k]))
         if self.verbose:
             self.progbar.update(self.seen, self.log_values)
+# ProgbarLogger()
 
 
 class History(Callback):
@@ -356,6 +361,7 @@ class History(Callback):
         self.epoch.append(epoch)
         for k, v in logs.items():
             self.history.setdefault(k, []).append(v)
+# History()
 
 
 class ModelCheckpoint(Callback):
@@ -450,6 +456,7 @@ class ModelCheckpoint(Callback):
                 if self.verbose > 0:
                     print('Epoch %05d: saving model to %s' % (epoch + 1, filepath))
                 self.model.save(filepath, self.save_weights_only)
+# ModelCheckpoint()
 
 
 class EarlyStopping(Callback):
@@ -532,6 +539,7 @@ class EarlyStopping(Callback):
     def on_train_end(self, logs=None):
         if self.stopped_epoch > 0 and self.verbose > 0:
             print('Epoch %05d: early stopping' % (self.stopped_epoch + 1))
+# EarlyStopping()
 
 
 class RemoteMonitor(Callback):
@@ -563,8 +571,7 @@ class RemoteMonitor(Callback):
 
     def on_epoch_end(self, epoch, logs=None):
         if requests is None:
-            raise ImportError('RemoteMonitor requires '
-                              'the `requests` library.')
+            raise ImportError('RemoteMonitor requires the `requests` library.')
         logs = logs or {}
         send = {}
         send['epoch'] = epoch
@@ -577,6 +584,7 @@ class RemoteMonitor(Callback):
         except requests.exceptions.RequestException:
             warnings.warn('Warning: could not reach RemoteMonitor '
                           'root server at ' + str(self.root))
+# RemoteMonitor()
 
 
 class LearningRateScheduler(Callback):
@@ -1118,7 +1126,7 @@ class LambdaCallback(Callback):
 
 
 class Plotter(Callback):
-    def __init__(self, step=1, figsize=(9,5)):
+    def __init__(self, step=1, figsize=(9, 5)):
         super(Plotter, self).__init__()
         self.step = step
         self.figsize = figsize
@@ -1178,5 +1186,5 @@ class TextLogger(Callback):
             self.loss_history['val_loss'].append(logs['val_loss'])
         if self.verbose:
             print('\tloss: {:.5f} \tval_loss: {:.5f}'.format(
-                  logs['loss'], logs['val_loss']))
+                logs['loss'], logs['val_loss']))
 # TextLogger()
