@@ -2,21 +2,19 @@
 #from __future__ import absolute_import
 
 import warnings
+import csv
 import torch
 
 from . import callbacks as cbks
 
 class Coach:
     """
-        PyCoach class
+        Coach class
     """
 
     def __init__(self, model, loaders, optimizer=None, loss_fn=None,
                  cuda="Auto"
                 ):
-        """
-
-        """
         self.model = model
         self.loaders = loaders
         self.optimizer = optimizer
@@ -32,7 +30,7 @@ class Coach:
 
     def evaluate(self, loader, loss_fn=None):
         """
-            Evaluation Method
+            Evaluation
         """
         if not loss_fn:
             loss_fn = self.loss_fn
@@ -67,7 +65,7 @@ class Coach:
 
     def load(self, fname, weights_only=False):
         """
-            Load Method
+            Load Model
         """
         if weights_only:
             self.model.load_state_dict(torch.load(fname))
@@ -77,7 +75,7 @@ class Coach:
 
     def predict(self, loader):
         """
-            Predict Method
+            Predict
         """
         outputs = torch.Tensor()
         outputs = outputs.to(self.device)
@@ -100,7 +98,7 @@ class Coach:
 
     def save(self, fname, weights_only=False):
         """
-            Save Method
+            Save Model
         """
         if weights_only:
             torch.save(self.model.state_dict(), fname)
@@ -110,11 +108,38 @@ class Coach:
                 torch.save(self.model, fname)
     # save()
 
+    def save_history(self, fname, append=False):
+        """
+            Save Training History
+        """
+        if not self.history.history:
+            raise ValueError('No history available to save!')
+
+        if append:
+            mode = 'a'
+        else:
+            mode = 'w'
+
+        header = sorted([k for k in self.history.history])
+        header.insert(0, 'epoch')
+
+        data = [self.history.epoch]
+        for k in range(1, len(header)):
+            data.append(self.history.history[header[k]])
+        data = list(map(list, zip(*data)))
+
+        with open(fname, mode) as csvfile:
+            w = csv.writer(csvfile)
+            if not append:
+                w.writerow(header)
+            w.writerows(data)
+    # save_history()
+
     def train(self, epochs, optimizer=None, loss_fn=None, callbacks=None,
               verbose=1,
              ):
         """
-            Train Method
+            Train
         """
 
         if not optimizer and self.optimizer is not None:
