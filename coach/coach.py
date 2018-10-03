@@ -13,16 +13,18 @@ class Coach:
     """
 
     def __init__(self, model, loaders, optimizer=None, loss_fn=None,
-                 cuda="Auto"
+                 use="Auto"
                 ):
         self.model = model
         self.loaders = loaders
         self.optimizer = optimizer
         self.loss_fn = loss_fn
 
-        if cuda == "Auto":
-            use_cuda = torch.cuda.is_available()
-        self.device = torch.device("cuda" if use_cuda else "cpu")
+        if use == "Auto":
+            use = torch.cuda.is_available()
+            self.device = torch.device("cuda" if use else "cpu")
+        else:
+            self.device = use
 
         self.history = None
         self.stop_training = False
