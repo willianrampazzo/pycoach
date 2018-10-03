@@ -1168,23 +1168,25 @@ class TextLogger(Callback):
 
     def __init__(self):
         super(TextLogger, self).__init__()
-        self.loss_history = {'loss':[], 'val_loss':[]}
 
     def on_train_begin(self, logs=None):
         self.verbose = self.params['verbose']
-        logs = logs or {}
         self.epochs = self.params['epochs']
+        self.train_start = time.time()
 
     def on_epoch_begin(self, epoch, logs=None):
+        self.epoch_start = time.time()
         if self.verbose:
             print('Epoch %d/%d' % (epoch + 1, self.epochs), end='')
 
     def on_epoch_end(self, epoch, logs=None):
         logs = logs or {}
-        self.loss_history['loss'].append(logs['loss'])
-        if len(logs) >= 2:
-            self.loss_history['val_loss'].append(logs['val_loss'])
         if self.verbose:
-            print('\tloss: {:.5f} \tval_loss: {:.5f}'.format(
-                logs['loss'], logs['val_loss']))
+            print('\tloss: {:.5f} \tval_loss: {:.5f} \t{:.2f}s'.format(
+                logs['loss'], logs['val_loss'], time.time() - self.epoch_start))
+
+    def on_train_end(self, logs=None):
+        if self.verbose:
+            print('Training time: {:.2f}s'.format(time.time() - self.train_start))
+
 # TextLogger()
