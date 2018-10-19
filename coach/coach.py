@@ -70,9 +70,12 @@ class Coach:
             Load Model
         """
         if weights_only:
-            self.model.load_state_dict(torch.load(fname))
+            self.model.load_state_dict(
+                torch.load(fname,
+                           map_location=torch.device(self.device)))
         else:
-            self.model = torch.load(fname)
+            self.model = torch.load(fname,
+                                    map_location=torch.device(self.device))
     # load()
 
     def predict(self, loader):
